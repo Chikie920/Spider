@@ -1,7 +1,5 @@
-from asyncore import file_dispatcher
 from time import sleep
 import re
-from pygame import HWACCEL
 import requests
 import csv
 from bs4 import BeautifulSoup
@@ -38,13 +36,12 @@ def web_data(url):
 
 
 
-def get_data(data, i):
+def get_data(web_data, i):
     # 获取网页数据
 
     # file = open('web_detail.html', 'r', encoding='utf-8')
     # web_data = BeautifulSoup(file.read(), 'lxml')
     # file.close()
-    web_data = BeautifulSoup(data, 'lxml')
 
     li_item = web_data.find_all(name='li', class_='imgbox')
     img_url = re.findall('<img.*?src=\"(.*?)\"/>', str(li_item), re.S)
@@ -55,24 +52,30 @@ def get_data(data, i):
     # 获取景点简介
 
     td_item = web_data.find_all(name='td', class_='td_l')
-    address = re.findall('<dt>.*?地址.*?<span>\s*(.*?)\s*</span>', str(td_item), re.S)
+    address = re.findall('<dt>\s*?地址.*?<span>\s*(.*?)\s*</span>', str(td_item), re.S)
     # 获取景点地址
 
+    print(img_url, detail, address, i)
     write_file(img_url, detail, address, i)
 
 
 
 def write_file(img_url, detail, address, i):
     # 数据写入文件
-    file = open(path+str(i)+'detail.txt', 'w',encoding='utf-8')
+    file = open(path+str(i)+'/'+'detail.txt', 'w',encoding='utf-8')
     for p in detail:
         file.write(p)
-    file.write(address[0])
+    file.write('\r\n')
+    if address != []:
+        file.write(address[0])
+    else:
+        file.write('程序无法识别地址，请手动查询')
     file.close()
     # 写入txt文件
-
-    for q, url in img_url:
-        file_img = open(path+str(i)+str(q)+'jpg', 'w')
+    q = 0
+    for url in img_url:
+        file_img = open(path+str(i)+'/'+str(q)+'.jpg', 'wb')
+        q=q+1
         img = requests.get(url, headers=headers)
         file_img.write(img.content)
         file_img.close()
@@ -84,7 +87,10 @@ def write_file(img_url, detail, address, i):
 #######
 def main():
     setup()
-    for i in range(1, counts+1):
+    for i in range(32, counts+1):
+        # print(url_list[i-1])
+        if os.path.exists(path+str(i)):
+            continue
         os.mkdir(path+str(i))
         webdata = web_data(url_list[i-1])
         get_data(webdata, i)

@@ -106,7 +106,7 @@ def main():
         # 获取网页代码
         get_palce_info(web_data)
         sleep(sleep_time)
-        # print('已完成第'+str(i)+'页内容...')
+        print('已完成第'+str(i)+'页内容...')
 
     
 main()
