@@ -18,7 +18,7 @@ def get_web_data(i):
     if web_data.status_code != 200:
         print('访问错误')
     re_web_data = BeautifulSoup(web_data.text, 'lxml')
-    # file = open('web.html', 'a+', encoding='utf-8')
+    # file = open('web.html', 'w', encoding='utf-8')
     # file.write(re_web_data.prettify())
     # file.close()
     return re_web_data
@@ -47,6 +47,15 @@ def get_palce_info(web_data):
     # img_url = re.findall('<img align=\"absmiddle\".*?src=\"(.*?)\".*?/>', str(get_img), re.S)
     # 获取景点图片链接
 
+    target_url = web_data.find_all(name='a', class_='titlink')
+    get_url = re.findall('<a.*?data-beacon=\"poi\".*?href=\"(.*?)\" target="_blank\"', str(target_url), re.S)
+
+    file = open('place_detail_url.csv', 'a+', encoding='utf-8', newline='')
+    file_csv = csv.writer(file)
+    file_csv.writerow(get_url)
+    file.close()
+    # 获取景点详情链接
+
     info = []
     i = 0
     for name in place_name:
@@ -74,7 +83,7 @@ def get_palce_info(web_data):
     wite_csv(info)
 
 def wite_csv(list):
-    file = open('place_info_new.csv', 'a+', encoding='utf-8')
+    file = open('place_info_new.csv', 'a+', encoding='utf-8', newline='')
     file_csv = csv.writer(file)
     for i in list:
         file_csv.writerow(i)
@@ -85,11 +94,19 @@ def wite_csv(list):
 ########
 #主程序#
 #######
-for i in range(begin, end+1):
-    web_data = get_web_data(i)
-# file = open('web.html', 'r', encoding='utf-8')
-# web_data = BeautifulSoup(file.read(), 'lxml')
-# 获取网页代码
-    get_palce_info(web_data)
-    sleep(sleep_time)
-    print('已完成第'+str(i)+'页内容...')
+def main():
+    file = open('place_info_new.csv', 'w', encoding='utf-8', newline='')
+    file_csv = csv.writer(file)
+    file_csv.writerow(['景点中文名', '景点英文名', '排名', '简述'])
+    file.close()
+    for i in range(begin, end+1):
+        web_data = get_web_data(i)
+        # file = open('web.html', 'r', encoding='utf-8')
+        # web_data = BeautifulSoup(file.read(), 'lxml')
+        # 获取网页代码
+        get_palce_info(web_data)
+        sleep(sleep_time)
+        # print('已完成第'+str(i)+'页内容...')
+
+    
+main()
